@@ -165,10 +165,10 @@ const headerSize {.intdefine.} = 64
 
 type
   HttpRequestData* = ref object
-    httpMethod, httpPath: ptr char
+    httpMethod, httpPath, httpBody: ptr char
     headers: array[headerSize, HttpHeaderData]
     httpMajor, httpMinor: char
-    httpMethodLen, httpPathLen, httpHeaderLen: int
+    httpMethodLen, httpPathLen, httpHeaderLen, httpBodyStart, httpBodyLen: int
 
   HttpHeaderData* = object
     headerName, headerValue: ptr char
@@ -260,7 +260,7 @@ proc parseHttpHeader*(headers: var array[headerSize, HttpHeaderData], buf: var p
 
   return headerLen
 
-proc parseHttpRequest*(requestData: HttpRequestData, requestBuffer: ptr char, requestLength: int): int =
+proc parseHttpRequest*(requestData: HttpRequestData, requestBuffer: ptr char, requestLength: int): int {.discardable.} =
   # argment initialization
   requestData.httpMethod = nil
   requestData.httpPath = nil
@@ -334,7 +334,10 @@ proc parseHttpRequest*(requestData: HttpRequestData, requestBuffer: ptr char, re
 
   if headerLen == -1: return -1
   requestData.httpHeaderLen = headerLen
-  return buffer - requestBuffer + 1
+
+  requestData.httpBodyStart = buffer - requestBuffer + 1
+  requestData.httpBodyLen = requestData.httpBodyStart - requestLength
+  return requestData.httpBodyStart
 
 proc getMethod*(req: HttpRequestData): string {.inline.} =
   result = ($(req.httpMethod))[0 .. req.httpMethodLen]
@@ -393,3 +396,4 @@ when isMainModule:
   assert reqData.getPath() == "/test"
   assert reqData.getMajor() == '1'
   assert reqData.getMinor() == '1'
+  assert buf[reqData.httpBodyStart..^1] == "test=hoge"
