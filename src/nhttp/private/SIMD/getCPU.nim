@@ -92,3 +92,5 @@ proc getCPUType*(): CPU_TYPE =
   cpuid(cpuInfo,7)
   if (cpuInfo[1] and (1 shl 5)) == 0: return SSE41 #actually avx but we are not that granual yet
   return AVX2
+
+echo getCPUType()
