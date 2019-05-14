@@ -8,6 +8,5 @@ srcDir        = "src"
 
 # Dependencies
 
-requires "nim >= 0.19.0"
-requires "https://github.com/2vg/mofuparser"
+requires "nim >= 0.19.4"
 requires "https://github.com/2vg/mofuhttputils"
