@@ -1,4 +1,4 @@
-import macros, bitops, httpcore
+import macros, bitops, strtabs, parseutils, httpcore
 
 macro getCPU: untyped =
   let CPU = staticExec(
@@ -357,6 +357,27 @@ proc getMajor*(req: HttpRequestData): char {.inline.} =
 
 proc getMinor*(req: HttpRequestData): char {.inline.} =
   req.httpMinor
+
+proc getBodyStart*(req: HttpRequestData): int {.inline.} =
+  req.httpBodyStart
+
+proc getBodySize*(req: HttpRequestData): int {.inline.} =
+  req.httpBodyLen
+
+proc bodyParse*(query: string): StringTableRef {.inline.} =
+  result = {:}.newStringTable
+  var i = 0
+  while i < query.len()-1:
+    var key = ""
+    var val = ""
+    i += query.parseUntil(key, '=', i)
+    if query[i] != '=':
+      raise newException(
+        ValueError, "Expected '=' at " & $i & " but got: " & $query[i])
+    inc(i) # Skip =
+    i += query.parseUntil(val, '&', i)
+    inc(i) # Skip &
+    result[key] = val
 
 iterator headersPair*(req: HttpRequestData): tuple[name, value: string] =
   for i in 0 ..< req.httpHeaderLen:
