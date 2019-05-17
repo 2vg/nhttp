@@ -5,6 +5,7 @@ author        = "2vg"
 description   = "simple http server implemented by Nim."
 license       = "MIT"
 srcDir        = "src"
+skipDirs      = @["examples"]
 
 # Dependencies
 
